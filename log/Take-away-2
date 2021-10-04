@@ -1,0 +1,80 @@
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 0.24801015853881836
+strategies:	 [(v0%3 == 1, 'take', 1), (v0%3 == 2, 'take', 2)]
+time cost:	 0.7354936599731445
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 0.27402639389038086
+strategies:	 [(v0%3 == 1, 'take', 1), (v0%3 == 2, 'take', 2)]
+time cost:	 0.7890245914459229
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 0.33500170707702637
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 0.2089986801147461
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 0.3399636745452881
+strategies:	 [(v0%3 == 1, 'take', 1), (v0%3 == 2, 'take', 2)]
+time cost:	 0.8079581260681152
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 0.39800548553466797
+strategies:	 [(v0%3 == 1, 'take', 1), (v0%3 == 2, 'take', 2)]
+time cost:	 1.2916646003723145
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 0.6340522766113281
+strategies:	 [(v0%3 == 1, 'take', 1), (v0%3 == 2, 'take', 2)]
+time cost:	 1.3931427001953125
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 0.17699670791625977
+strategies:	 [(v0%3 == 1, 'take', 1), (v0%3 == 2, 'take', 2)]
+time cost:	 0.6560401916503906
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 0.29599809646606445
+strategies:	 [(v0%3 == 1, 'take', 1), (v0%3 == 2, 'take', 2)]
+time cost:	 0.7799983024597168
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 1.2714016437530518
+strategies:	 [(v0%3 == 1, 'take', 1), (v0%3 == 2, 'take', 2)]
+time cost:	 1.5881121158599854
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 0.27559447288513184
+strategies:	 [(v0%3 == 1, 'take', 1), (v0%3 == 2, 'take', 2)]
+time cost:	 1.0425925254821777
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 0.2839686870574951
+strategies:	 [(v0%3 == 1, 'take', 1), (v0%3 == 2, 'take', 2)]
+time cost:	 1.0178797245025635
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 1.1158275604248047
+strategies:	 [(v0%3 == 1, 'take', 1), (v0%3 == 2, 'take', 2)]
+time cost:	 1.431267261505127
+
+normal rule
+N-formula:	 Not(v0%3 == 0)
+time cost:	 0.29047274589538574
+strategies:	 [(v0%3 == 1, 'take', 1), (v0%3 == 2, 'take', 2)]
+time cost:	 0.7283697128295898
