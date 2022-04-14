@@ -1,5 +1,7 @@
-from template import FormulaTemplate, EquTemplate
-from domain.utils.refiner import Refiner
+import 可修改代码smt.domain.action
+from 可修改代码smt.template import FormulaTemplate, EquTemplate
+from 可修改代码smt.domain.utils.refiner import Refiner
+
 from z3 import *
 from random import randint
 
@@ -7,8 +9,11 @@ from random import randint
 
 
 #式子的大小
-tmp_size = [(1, 1, 0), (1, 0, 1),  (1, 1, 1), (2, 0, 1),
-             (2, 1, 1), (2, 2, 1),(1, 0, 2),(2, 0, 2), (2, 1, 2), (2, 1, 4), (4, 1, 4), (2,3,0),(3,2,2),(3,2,1)]
+# tmp_size = [(1, 0, 1), (1,1,2), (1, 0, 2), (1, 1, 1), (2, 0, 1),
+#             (2, 0, 2), (2, 1, 1), (2, 2, 1), (2, 1, 2), (2, 1, 4), (4, 1, 4), (2, 3, 0)]
+tmp_size = [  (1, 0, 1), (2,0,1), (1, 1, 1), (1, 1, 2),(2, 1, 1), (2, 2, 1),(1, 0, 2),
+              (2, 0, 2), (2, 1, 2), (2, 1, 4),(2,2,2),(3,3,0), (3, 4,0), (2,3,0),(3,2,2),(3,2,1) ]
+# tmp_size = [(1,1,1),(2,2,2),(3,3,3),(4,4,4),(5,5,5),(6,6,6),(7,7,7),(8,8,8),(9,9,9),(10,10,10)]
 # tmp_size = [ (1, 0, 1), (1, 1, 1),(1, 1, 0),  (2, 0, 1) ,(1,2,1),(1,2,0),(2,2,0),
 #              (2, 1, 1) ,  (3, 1, 0), (3, 1, 1),(3,2,1), (3, 0, 1), (2,3,0), (2, 2, 1)]
 # tmp_size=[(1,0,1),(1,1,0),(1,0,2),(1,2,0),(1,2,1),(1,0,2),(1,2,2),(2,0,1),(2,1,0),(2,1,1),(2,2,1),(2,1,2),
@@ -22,7 +27,7 @@ tmp_size = [(1, 1, 0), (1, 0, 1),  (1, 1, 1), (2, 0, 1),
 
 
 class NormalGenerator:
-    def __init__(self, domain):
+    def __init__(self, domain,pwd):
         self.domain = domain
         self.transition_formula = domain.transition_formula()
         self.ending_state = [self.get_state_tuple(state) for state in domain.ending_states]
@@ -32,11 +37,14 @@ class NormalGenerator:
         self.p_set = {*self.ending_state}
         self.n_set = set()
         self.not_equ_ending = False
+        self.pwd = pwd
+
 
         # 令P-state不能为ending state
         for state in self.ending_state: #遍历结果状态
             for i, j in zip(list(domain.pddl2icg.values()), state):
                 self.not_equ_ending = Or(self.not_equ_ending, i != j)
+        # print("ffffffffffffffffffffffffffffff",self.not_equ_ending)
         self.not_equ_ending = simplify(self.not_equ_ending)
         print("P-state constraint:", self.not_equ_ending)
         print("Transition formula of %s:" % domain.name)
@@ -50,20 +58,55 @@ class NormalGenerator:
     def gen_eff(self, state):  #将状态放进去，state再代入v中 ，得到的是后续状态
         var_dict = dict(zip(self.domain.pddl2icg.keys(), state)) #v=2
         # print("state:\n",state)
-        # print("var_dict:\n",var_dict)
+        # print("@@@@@@@@@@@@@@@@@@@@@@@@@test4",var_dict) #{'?v1': 1, '?v2': 0}
         for action in self.domain.actions:
-            param, param_set, ok = action.get_all_params(var_dict)  #得到k的所有取值
+            # print("test4",param)
+            #############
+            # param_dict = list()
+            #############
+            param, param_set, ok = action.get_all_params(var_dict)  #得到k和l的所有取值
+            # print("###################",param, param_set, ok) #(['?k', '?l'], {(1,), (1, 1)}, True)
+            # print("%%%%%%%%%%%%%%%%%%%%%5",  param_set ) #[{1, 2}]
+            if param_set is not None:
+                param_set = list(param_set)
+
+            # pri
+            # Condition1 sat.nt("test4",var_dict) #{v1:1 , v2：1}
             if ok:
-                if param_set is not None and len(param_set) > 0:
-                    for k in param_set:
-                        param_dict = {param: k}
-                        eff_dict = action.get_eff(var_dict, param_dict) #eff_dict = var_dict - param_dict
-                        # print("var_dict,param_dict=\n",var_dict,param_dict)
-                        # print("eff_dict=\n",eff_dict)
-                        if eff_dict is not None:
-                            yield self.get_state_tuple(eff_dict)
-                else:
-                    param_dict = {param: 0}
+                # print("param_Set[0] = **************************",param )
+                if    param is not None and  param_set[0] is not None and len(param)  == 1   :
+                    # print("$$$$$$$$$$$$$$$$$$$",param)
+                    if len(param_set[0]) > 0:
+                        for k in param_set[0]:
+                            param_dict = {param[0]: k}
+                            # print("eeeeeeeeeeeeeeeeeeee",type(param_dict) ) #{'?k': 1}
+                            eff_dict = action.get_eff(var_dict, param_dict)  # eff_dict = var_dict - param_dict
+                            # print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",var_dict,param_dict) #{'?v1': 0, '?v2': 1} {'?k': 1}
+                            # print("eff_dict=\n",eff_dict) #{'?v': 1}
+                            if eff_dict is not None:
+                                yield self.get_state_tuple(eff_dict)
+                ###########################
+                elif   param is not None and param_set[0] is not None and len(param) > 1 and len(param_set[0]) > 0:
+                    # print("param_Set = ***************************",param,param_set)
+                    param_dict = {}
+                    for i in range(len(param)):
+                        for k in param_set[i]:
+                            param_dict[param[i]] = k
+                            # print("$$$$$$$$$$$$$$$$$$$$$",i,param_dict)
+                    eff_dict = action.get_eff(var_dict,param_dict)
+                    if eff_dict is not None:
+                        yield  self.get_state_tuple(eff_dict)
+
+                ############################
+
+
+
+                elif param is not None:
+                    # print("param = ***********************",param)
+                    param_dict = {}
+                    for i in range(len(param)):
+                        param_dict[param[i]] =  0
+                    # print("test4",param_dict)
                     eff_dict = action.get_eff(var_dict, param_dict)
                     if eff_dict is not None:
                         yield self.get_state_tuple(eff_dict)
@@ -82,12 +125,12 @@ class NormalGenerator:
 
     def generate_formula(self, w,idx ): ##改动！！！！！
 
-        if (idx > 15):
+        if (idx > 20):
             idx = 0
 
         print("\n\nsize:", tmp_size[idx])
 
-        self.formula_template = FormulaTemplate(list(self.domain.pddl2icg.values()),w,*tmp_size[idx])
+        self.formula_template = FormulaTemplate(list(self.domain.pddl2icg.values()),w,*tmp_size[idx],self.pwd)
 
         eff_var = list(self.domain.eff_mapper.values())
         # print("eff_var:\n",eff_var)
@@ -156,45 +199,47 @@ class NormalGenerator:
                                 if self.check_np(exam):
                                     self.formula_template.add(exam, True)
                                     self.n_set.add(exam)
-                                    if idx == 1 or idx == 3 or idx == 8:
-                                        w = w - 1
+                                    # if idx == 1 or idx == 3 or idx == 8:
+                                    #     w = w - 1
                                     return self.generate_formula(w + 1, idx)
                                 else:
                                     self.formula_template.add(exam, False)
                                     self.p_set.add(exam)
-                                    if idx == 1 or idx == 3 or idx == 8:
-                                        w = w - 1
+                                    # if idx == 1 or idx == 3 or idx == 8:
+                                    #     w = w - 1
                                     return self.generate_formula(w + 1, idx)
+
+
 
 
                         #############33
                         if not self.check_np(example):  # 这个反例是一个P状态
                             print("This example belongs to P-state.")
                             #########判断是否已经存在P_set
-
+                            # print(example in self.p_set)
                             if example in self.p_set:
+
                                 #if not self.p_set:
                                 exam = list(list(self.p_set)[0])
-                                exam[0] = exam[0]+1
+                                exam[0] = exam[0]+5
                                 exam = tuple(exam)
                                 while exam in self.p_set or exam in self.n_set:
                                     exam = list(exam)
                                     exam[0] = exam[0]+1
                                     exam = tuple(exam)
+                                # print("@@@@@@@@@@exam",exam)
                                 if self.check_np(exam):
                                     self.formula_template.add(exam, True)
                                     self.n_set.add(exam)
-                                    if idx == 1 or idx == 3 or idx == 8:
-                                        w = w - 1
+                                    # if idx == 1 or idx == 3 or idx == 8:
+                                    #     w = w - 1
                                     return self.generate_formula(w + 1, idx)
                                 else:
                                     self.formula_template.add(exam, False)
                                     self.p_set.add(exam)
-                                    if idx == 1 or idx == 3 or idx == 8:
-                                        w = w - 1
+                                    # if idx == 1 or idx == 3 or idx == 8:
+                                    #     w = w - 1
                                     return self.generate_formula(w + 1, idx)
-
-
 
                             #########
 
@@ -253,17 +298,18 @@ class NormalGenerator:
                                     if self.check_np(exam):
                                         self.formula_template.add(exam, True)
                                         self.n_set.add(exam)
-                                        if idx == 1 or idx == 3 or idx == 8:
-                                            w = w - 1
+                                        # if idx == 1 or idx == 3 or idx == 8:
+                                        #     w = w - 1
                                         return self.generate_formula(w + 1, idx)
                                     else:
                                         self.formula_template.add(exam, False)
                                         self.p_set.add(exam)
-                                        if idx == 1 or idx == 3 or idx == 8:
-                                            w = w - 1
+                                        # if idx == 1 or idx == 3 or idx == 8:
+                                        #     w = w - 1
                                         return self.generate_formula(w + 1, idx)
 
                                     break
+
 
                             #############33
                             if self.check_np(example):
@@ -281,38 +327,81 @@ class NormalGenerator:
                                     if self.check_np(exam):
                                         self.formula_template.add(exam, True)
                                         self.n_set.add(exam)
-                                        if idx == 1 or idx == 3 or idx == 8:
-                                            w = w - 1
+                                        # if idx == 1 or idx == 3 or idx == 8:
+                                        #     w = w - 1
                                         return self.generate_formula(w + 1, idx)
                                     else:
                                         self.formula_template.add(exam, False)
                                         self.p_set.add(exam)
-                                        if idx == 1 or idx == 3 or idx == 8:
-                                            w = w - 1
+                                        # if idx == 1 or idx == 3 or idx == 8:
+                                        #     w = w - 1
                                         return self.generate_formula(w + 1, idx)
+
 
                                 self.formula_template.add(example, True)
                                 self.n_set.add(example)
                             #################################
                             else:
+                                flag = 0
                                 print("This example belong to P-state.")
+                                # self.p_set.add(example)
+                                # self.formula_template.add(example,False)
                                 for eff in self.gen_eff(example):
+                                    # print("@@@@@@@@@@@@@@@@",eff)
+                                    print(self.check_np(eff))
                                     if self.check_np(eff):
+
                                         if not bool(self.formula_template.formula_model(*eff)):
+                                            flag = 1
 
                                             print("find an eff", eff, ", which belongs to P-state.")
                                             self.formula_template.add(eff, True)
                                             self.n_set.add(eff)
-
-
                                             break
+
+
+
                                     elif bool(self.formula_template.formula_model(*eff)):
 
                                         print("find an eff", eff, ", which belongs to N-state.")
+                                        flag = 1
                                         self.formula_template.add(eff, True)
                                         self.n_set.add(eff)
                                         break
+                                ######################
+                                # print("$$$@@@@@@",flag)
+                                if flag == 0:
+                                    flag = 0
+                                    exam = list(list(self.p_set)[0])
+
+                                    nexam = len(list(list(self.p_set)[0]))
+                                   # print("nexAM=",nexam)
+                                   #  for i in range(nexam):
+                                   #      exam[i] = exam[i] + 1
+                                    exam[0] = exam[0] + 1
+                                    exam = tuple(exam)
+                                    while exam in self.p_set or exam in self.n_set:
+                                        exam = list(exam)
+                                        for i in range(nexam):
+                                            exam[i]=exam[i]+1
+                                        #exam[0] = exam[0] + 1
+                                        exam = tuple(exam)
+                                    if self.check_np(exam):
+                                        self.formula_template.add(exam, True)
+                                        self.n_set.add(exam)
+
+
+                                    else:
+                                        self.formula_template.add(exam, False)
+                                        self.p_set.add(exam)
+
+                                    # print("!!!!!!!!!!!!",exam)
+                                    if idx == 1 or idx == 3 or idx == 8:
+                                        w = w - 1
+                                    return self.generate_formula(w + 1, idx)
+                                ###########################
                             break
+
 
                 else:
                     print("condition2 sat.")
@@ -325,11 +414,11 @@ class NormalGenerator:
             elif check == unsat:#求的公式不满足
                 print('###unsat, extending...')
             ###################
-
                 if idx == 15:
                     idx = 0
-                if idx == 0 or idx ==2 or idx == 7:
-                    w = w -1
+                # if idx == 0 or idx ==2 or idx == 7:
+                #     w = w -1
+
             ###################
                 return self.generate_formula(w+1,idx+1 )  #换参数
             if len(self.p_set) > 4 * len(self.n_set): #让p_set和n_set的数目相差不超过4
@@ -343,8 +432,8 @@ class NormalGenerator:
 
                 if idx == 15:
                     idx = 0
-                if idx == 0 or idx ==2 or idx == 7:
-                    w = w -1
+                # if idx == 0 or idx ==2 or idx == 7:
+                #     w = w -1
                 ##########################
                 return self.generate_formula(w+1 ,idx+1)
             if len(self.n_set) > 4 * len(self.p_set):
@@ -356,13 +445,13 @@ class NormalGenerator:
                             break
             #########################
 
+
                 if idx == 15:
                     idx = 0
-                if idx == 0 or idx ==2 or idx == 7:
-                    w = w -1
-
+                # if idx == 0 or idx ==2 or idx == 7:
+                #     w = w -1
             ############################3
-                return self.generate_formula(w+1 ,idx+1  )
+                return self.generate_formula(w +1,idx+1  )
 
 
 
@@ -385,20 +474,86 @@ class NormalGenerator:
         # else:
         #     raise RuntimeError("fail to generate state of cover:", cover)
 
+    # def gen_eff2(self, state, action):
+    #     var_dict = dict(zip(self.domain.pddl2icg.keys(), state))
+    #     # print("var_dict=~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",var_dict)
+    #     param, param_set, ok = action.get_all_params(var_dict)
+    #     # print("param , param_set ",param , param_set)
+    #     if param_set is not None:
+    #         param_set = list(param_set)
+    #
+    #     if ok:
+    #         param_dict = []
+    #         if param_set is not None and len(param_set) == 1:
+    #             if param_set is not None and len(param_set) > 0:
+    #
+    #         # if len(param_set) > 0:
+    #                 for k in param_set[0]:
+    #                     param_dict.append({param[0]: k})
+    #                     eff_dict = action.get_eff(var_dict, param_dict)
+    #                     if eff_dict is not None:
+    #                         res = self.get_state_tuple(eff_dict)
+    #                         if not self.check_np(res):
+    #                             yield k, action.name, res
+    #         # else:
+    #         elif param_set is not None and len(param_set) == 2:
+    #
+    #             for i in range(len(param)):
+    #                 for k in param_set[i]:
+    #                     param_dict.append({param[i]: k})
+    #             # param_dict = {param: 0}
+    #                 eff_dict = action.get_eff(var_dict, param_dict)
+    #                 if eff_dict is not None:
+    #                     res = self.get_state_tuple(eff_dict)
+    #                     if not self.check_np(res):
+    #                         yield k, action.name, res
+    #                         # yield 0, action.name, res
+    #         else:
+    #             param_dict.append({param:0})
+    #             eff_dict = action.get_eff(var_dict,param_dict)
+    #             if eff_dict is not None:
+    #                 res = self.get_state_tuple(eff_dict)
+    #                 if not self.check_np(res):
+    #                     yield 0, action.name, res
     def gen_eff2(self, state, action):
         var_dict = dict(zip(self.domain.pddl2icg.keys(), state))
+        # print("var_dict = !!!!!!!!!!@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",var_dict)
         param, param_set, ok = action.get_all_params(var_dict)
+        # print("#######################################param =  param_set  , ok ",param , param_set,ok)
+        #['?k', '?k1'] {(1,), (1, 1)} True
         if ok:
-            if len(param_set) > 0:
-                for k in param_set:
-                    param_dict = {param: k}
-                    eff_dict = action.get_eff(var_dict, param_dict)
-                    if eff_dict is not None:
-                        res = self.get_state_tuple(eff_dict)
-                        if not self.check_np(res):
-                            yield k, action.name, res
+            if   param != None and len(param_set[0]) > 0 :
+                if len(param)==1 and param_set[0] is not None:
+                    for k in param_set[0]:
+                        param_dict = {param[0]: k}
+                        eff_dict = action.get_eff(var_dict, param_dict)
+                        # print("eff_dict = ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",eff_dict)
+                        if eff_dict is not None:
+                            res = self.get_state_tuple(eff_dict)
+                            if not self.check_np(res):
+                                # print("k , action.name , res )))))))))))))))))))))))",k , action.name,res)
+                                yield k, action.name, res
+                elif param_set[0] is not None:
+
+                        # print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%多于俩参数！！还没写",param,param_set)
+                        param_dict = {}
+                        for i in range(len(param)):
+                            for k in param_set[i]:
+                                param_dict[param[i]] = k
+                                # print("k = ***************************",k)
+                        # print("var_Dcit , param_dict = &&&&&&&&&&&&&&&&&&&&&&&&&&&&",var_dict , param_dict)
+                        eff_dict = action.get_eff(var_dict , param_dict)
+                        # print("eff_dict = &&&&&&&&&&&&&&&&&&&&&&&&",eff_dict)
+                        if eff_dict is not None:
+                            # print("afdasfa")
+                            res = self.get_state_tuple(eff_dict)
+                            if not self.check_np(res):
+                                # print("#########################k ,action.name , res",k , action.name , res)
+                                yield k , action.name , res
             else:
-                param_dict = {param: 0}
+                param_dict = {}
+                for i in range(len(param)):
+                    param_dict[param[i]] = 0
                 eff_dict = action.get_eff(var_dict, param_dict)
                 if eff_dict is not None:
                     res = self.get_state_tuple(eff_dict)
@@ -435,18 +590,25 @@ class NormalGenerator:
 
         strategies = []
         find = [False for _ in refiner_model]
-        for cover_idx, cover_list in enumerate(refiner_model):
+        for cover_idx, cover_list in enumerate(refiner_model): #cover_idx 是余数
             cover = simplify(And(*cover_list))
-            print('-' * 50, "\ncover:", cover)
+            # print("cover = ",cover )
+            print('-' * 50, "\ncover:", cover)  #cover: v0%7 == 1
             for action in self.domain.actions:
+                # print("action =~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`` ",action )
                 flag, demo = False, dict()
+                # print("demo = ******************************",demo)
                 for i in range(5):  # 生成5个用例
                     self.gen_example_of_cover(cover, demo)
                 state_list = list(demo.keys())
+                # print("state_list = *********************************",state_list)
+                # #[(1,), (8,), (15,), (22,), (29,)]
                 for state in state_list:
                     params = [param[0] for param in self.gen_eff2(state, action)]
+                    # print("params = wwww!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",params) #[2, 4, 6]
                     if len(params) > 0:
                         demo[state] = [k for k in params]
+                        # print("demo[state] , state",demo[state] , state)
                     else:
                         flag = True
                         break
@@ -454,21 +616,21 @@ class NormalGenerator:
                     continue
 
                 eff_var = list(self.domain.eff_mapper.values())
-
+                # print("eff_var = ****************************",eff_var) #[w0]
                 while True:
                     print(action.name, demo)
                     state_list = list(demo.keys())
                     comb_list = []  # 当前action下可能的所有情况
 
                     self.combination_of_demo(state_list, demo, [], comb_list)
-                    print("con_list", comb_list)
+                    # print("con_list", comb_list)
                     while len(comb_list) > 0:
                         # for example_set in comb_list:
                         example_set = comb_list[0]
-                        print('example:', comb_list)
+                        # print('example:***************************************', comb_list)
                         comb_list = comb_list[1:]
                         param_expr = self.generate_param(example_set)
-                        print("param_expr",param_expr)
+                        # print("param_expr",param_expr)
                         if param_expr is None:
                             continue
 
@@ -499,7 +661,7 @@ class NormalGenerator:
                                     comb_list = comb_list[1:]
                                     k -= 1
                                     for ntal in need_to_append_list:
-                                        comb_list.append([*example_set, ntal])
+                                               comb_list.append([*example_set, ntal])
                             else:
                                 break
                         else:
@@ -522,7 +684,7 @@ class NormalGenerator:
 
 
 class MisereGenerator:
-    def __init__(self, domain):
+    def __init__(self, domain,pwd):
         self.domain = domain
         self.transition_formula = domain.transition_formula()
         self.ending_state = [self.get_state_tuple(state) for state in domain.ending_states]
@@ -532,6 +694,7 @@ class MisereGenerator:
         self.p_set = set()
         self.n_set = {*self.ending_state}
         self.not_equ_ending = False
+        self.pwd = pwd
 
         # 令P-state不能为ending state
         for state in self.ending_state:
@@ -547,22 +710,62 @@ class MisereGenerator:
     def get_state_tuple(self, var_dict):
         return tuple(var_dict.values())
 
-    def gen_eff(self, state):
-        var_dict = dict(zip(self.domain.pddl2icg.keys(), state))
+    def gen_eff(self, state):  #将状态放进去，state再代入v中 ，得到的是后续状态
+        var_dict = dict(zip(self.domain.pddl2icg.keys(), state)) #v=2
+        # print("state:\n",state)
+        # print("@@@@@@@@@@@@@@@@@@@@@@@@@test4",var_dict) #{'?v1': 1, '?v2': 0}
         for action in self.domain.actions:
-            param, param_set, ok = action.get_all_params(var_dict)
+            # print("test4",param)
+            #############
+            # param_dict = list()
+            #############
+            param, param_set, ok = action.get_all_params(var_dict)  #得到k和l的所有取值
+            # print("###################",param, param_set, ok) #(['?k', '?l'], {(1,), (1, 1)}, True)
+            # print("%%%%%%%%%%%%%%%%%%%%%5",  param_set ) #[{1, 2}]
+            if param_set is not None:
+                param_set = list(param_set)
+
+            # pri
+            # Condition1 sat.nt("test4",var_dict) #{v1:1 , v2：1}
             if ok:
-                if param_set is not None and len(param_set) > 0:
-                    for k in param_set:
-                        param_dict = {param: k}
-                        eff_dict = action.get_eff(var_dict, param_dict)
-                        if eff_dict is not None:
-                            yield self.get_state_tuple(eff_dict)
-                else:
-                    param_dict = {param: 0}
+                # print("param_Set[0] = **************************",param )
+                if    param is not None and  param_set[0] is not None and len(param)  == 1   :
+                    # print("$$$$$$$$$$$$$$$$$$$",param)
+                    if len(param_set[0]) > 0:
+                        for k in param_set[0]:
+                            param_dict = {param[0]: k}
+                            # print("eeeeeeeeeeeeeeeeeeee",type(param_dict) ) #{'?k': 1}
+                            eff_dict = action.get_eff(var_dict, param_dict)  # eff_dict = var_dict - param_dict
+                            # print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",var_dict,param_dict) #{'?v1': 0, '?v2': 1} {'?k': 1}
+                            # print("eff_dict=\n",eff_dict) #{'?v': 1}
+                            if eff_dict is not None:
+                                yield self.get_state_tuple(eff_dict)
+                ###########################
+                elif   param is not None and param_set[0] is not None and len(param) > 1 and len(param_set[0]) > 0:
+                    # print("param_Set = ***************************",param,param_set)
+                    param_dict = {}
+                    for i in range(len(param)):
+                        for k in param_set[i]:
+                            param_dict[param[i]] = k
+                            # print("$$$$$$$$$$$$$$$$$$$$$",i,param_dict)
+                    eff_dict = action.get_eff(var_dict,param_dict)
+                    if eff_dict is not None:
+                        yield  self.get_state_tuple(eff_dict)
+
+                ############################
+
+
+
+                elif param is not None:
+                    # print("param = ***********************",param)
+                    param_dict = {}
+                    for i in range(len(param)):
+                        param_dict[param[i]] =  0
+                    # print("test4",param_dict)
                     eff_dict = action.get_eff(var_dict, param_dict)
                     if eff_dict is not None:
                         yield self.get_state_tuple(eff_dict)
+
 
     def check_np(self, state):
         if state in self.p_demo:
@@ -576,9 +779,13 @@ class MisereGenerator:
         self.p_demo.add(state)
         return False
 
-    def generate_formula(self,w, idx=0):
+    def generate_formula(self,w, idx):
+
+        if (idx > 20):
+            idx = 0
+
         print("\n\nsize:", tmp_size[idx])
-        self.formula_template = FormulaTemplate(list(self.domain.pddl2icg.values()),w, *tmp_size[idx] )
+        self.formula_template = FormulaTemplate(list(self.domain.pddl2icg.values()),w, *tmp_size[idx],self.pwd )
 
         eff_var = list(self.domain.eff_mapper.values())
 
@@ -594,13 +801,8 @@ class MisereGenerator:
             self.formula_template.add(state, True)
         if self.formula_template.check() == unsat:
             print("###unsat, extending...")
-            ##########
-            if idx == 15:
-                idx = 0
-            if idx == 1 or idx == 3 or idx == 8:
-                w = w - 1
-            ###########
-            return self.generate_formula(w+1 ,idx + 1)
+
+            return self.generate_formula(w ,idx + 1)
 
         while True:
             print("\nSP:", self.p_set)
@@ -623,7 +825,7 @@ class MisereGenerator:
                 while True:  # 直到找到合适的反例
                         print("Find a counter example", example)
                         for i in range(len(example)):
-                            if example[i] > 100 or example in  self.p_set or example in self.n_set :
+                            if example[i] > 100   :
                             #################################3
                                 exam = list(list(self.p_set)[0])
                                 exam[0] = exam[0] + 1
@@ -636,19 +838,49 @@ class MisereGenerator:
                                 if self.check_np(exam):
                                     self.formula_template.add(exam, True)
                                     self.n_set.add(exam)
-                                    if idx == 1 or idx == 3 or idx == 8:
-                                        w = w - 1
-                                    return self.generate_formula(w + 1, idx)
+                                    # if idx == 1 or idx == 3 or idx == 8:
+                                    #     w = w - 1
+                                    return self.generate_formula(w + 1, idx+1)
                                 else:
                                     self.formula_template.add(exam, False)
                                     self.p_set.add(exam)
-                                    if idx == 1 or idx == 3 or idx == 8:
-                                        w = w - 1
-                                    return self.generate_formula(w + 1, idx)
+                                    # if idx == 1 or idx == 3 or idx == 8:
+                                    #     w = w - 1
+                                    return self.generate_formula(w + 1, idx+1)
                                 ######################################
 
                         if not self.check_np(example):  # 这是一个P状态
                             print("This example belongs to P-state.")
+                            #########判断是否已经存在P_set
+                            # print(example in self.p_set)
+                            if example in self.p_set:
+
+                                # if not self.p_set:
+                                exam = list(list(self.p_set)[0])
+                                exam[0] = exam[0] + 5
+                                exam = tuple(exam)
+                                while exam in self.p_set or exam in self.n_set:
+                                    exam = list(exam)
+                                    exam[0] = exam[0] + 1
+                                    exam = tuple(exam)
+                                print("@@@@@@@@@@exam", exam)
+                                if self.check_np(exam):
+                                    self.formula_template.add(exam, True)
+                                    self.n_set.add(exam)
+                                    # if idx == 1 or idx == 3 or idx == 8:
+                                    #     w = w - 1
+                                    return self.generate_formula(w + 1, idx)
+                                else:
+                                    self.formula_template.add(exam, False)
+                                    self.p_set.add(exam)
+                                    # if idx == 1 or idx == 3 or idx == 8:
+                                    #     w = w - 1
+                                    return self.generate_formula(w + 1, idx)
+
+                            #########
+
+
+
                             self.formula_template.add(example, False)
                             self.p_set.add(example)
                         else:
@@ -683,7 +915,7 @@ class MisereGenerator:
                     while True:
                             print("Find a counter example", example)
                             for i in range(len(example)):
-                                if example[i] > 100 or example in  self.p_set or example in self.n_set :
+                                if example[i] > 100    :
                                     #################################3
                                     exam = list(list(self.p_set)[0])
                                     exam[0] = exam[0] + 1
@@ -692,19 +924,20 @@ class MisereGenerator:
                                         exam = list(exam)
                                         exam[0] = exam[0] + 1
                                         exam = tuple(exam)
-                                    print("exam=",exam)
+                                    #print("exam=",exam)
                                     if self.check_np(exam):
                                         self.formula_template.add(exam, True)
                                         self.n_set.add(exam)
-                                        if idx == 1 or idx == 3 or idx == 8:
-                                            w = w - 1
-                                        return self.generate_formula(w + 1, idx)
+                                        # if idx == 1 or idx == 3 or idx == 8:
+                                        #     w = w - 1
+                                        return self.generate_formula(w + 1, idx+1)
                                     else:
                                         self.formula_template.add(exam, False)
                                         self.p_set.add(exam)
-                                        if idx == 1 or idx == 3 or idx == 8:
-                                            w = w - 1
+                                        # if idx == 1 or idx == 3 or idx == 8:
+                                        #     w = w - 1
                                         return self.generate_formula(w + 1, idx)
+                                    break
                                     ######################################
 
 
@@ -713,21 +946,80 @@ class MisereGenerator:
                             if self.check_np(example):
                                 print("This example belongs to N-state.")
                                 self.formula_template.add(example, True)
+                                #####################
+                                if example in self.n_set:
+                                    # if not self.p_set:
+                                    exam = exam = list(list(self.p_set)[0])
+                                    exam[0] = exam[0] + 1
+                                    exam = tuple(exam)
+                                    while exam in self.p_set or exam in self.n_set:
+                                        exam = list(exam)
+                                        exam[0] = exam[0] + 1
+                                        exam = tuple(exam)
+                                    if self.check_np(exam):
+                                        self.formula_template.add(exam, True)
+                                        self.n_set.add(exam)
+                                        # if idx == 1 or idx == 3 or idx == 8:
+                                        #     w = w - 1
+                                        return self.generate_formula(w + 1, idx)
+                                    else:
+                                        self.formula_template.add(exam, False)
+                                        self.p_set.add(exam)
+                                        # if idx == 1 or idx == 3 or idx == 8:
+                                        #     w = w - 1
+                                        return self.generate_formula(w + 1, idx)
+                                self.formula_template.add(example , True)
                                 self.n_set.add(example)
+
                             else:
+                                flag = 0
                                 print("This example belong to P-state.")
                                 for eff in self.gen_eff(example):
                                     if self.check_np(eff):
                                         if not bool(self.formula_template.formula_model(*eff)):
+                                            flag = 1
                                             print("find an eff", eff, ", which belongs to P-state.")
                                             self.formula_template.add(eff, True)
                                             self.n_set.add(eff)
                                             break
                                     elif bool(self.formula_template.formula_model(*eff)):
                                         print("find an eff", eff, ", which belongs to N-state.")
+                                        flag = 1
                                         self.formula_template.add(eff, True)
                                         self.n_set.add(eff)
                                         break
+
+                                    if flag == 0:
+                                        flag = 0
+                                        exam = list(list(self.p_set)[0])
+
+                                        nexam = len(list(list(self.p_set)[0]))
+                                        # print("nexAM=",nexam)
+                                        #  for i in range(nexam):
+                                        #      exam[i] = exam[i] + 1
+                                        exam[0] = exam[0] + 1
+                                        exam = tuple(exam)
+                                        while exam in self.p_set or exam in self.n_set:
+                                            exam = list(exam)
+                                            for i in range(nexam):
+                                                exam[i] = exam[i] + 1
+                                            # exam[0] = exam[0] + 1
+                                            exam = tuple(exam)
+                                        if self.check_np(exam):
+                                            self.formula_template.add(exam, True)
+                                            self.n_set.add(exam)
+
+
+                                        else:
+                                            self.formula_template.add(exam, False)
+                                            self.p_set.add(exam)
+
+                                        print("!!!!!!!!!!!!", exam)
+                                        # if idx == 1 or idx == 3 or idx == 8:
+                                        #     w = w - 1
+                                        return self.generate_formula(w + 1, idx)
+                                    ###########################
+                                break
                             break
 
                 else:
@@ -742,8 +1034,8 @@ class MisereGenerator:
                 ##########
                 if idx == 15:
                     idx = 0
-                if idx == 0 or idx == 2 or idx == 7:
-                    w = w - 1
+                # if idx == 0 or idx == 2 or idx == 7:
+                #     w = w - 1
                 ###########
                 return self.generate_formula(w+1,idx + 1)
             if len(self.p_set) > 4 * len(self.n_set):
@@ -770,8 +1062,8 @@ class MisereGenerator:
                 ##########
                 if idx == 15:
                     idx = 0
-                if idx == 0 or idx == 2 or idx == 7:
-                    w = w - 1
+                # if idx == 0 or idx == 2 or idx == 7:
+                #     w = w - 1
                 ###########
                 return self.generate_formula(w+1,idx + 1)
         return self.formula_template
@@ -795,18 +1087,43 @@ class MisereGenerator:
 
     def gen_eff2(self, state, action):
         var_dict = dict(zip(self.domain.pddl2icg.keys(), state))
+        # print("var_dict = !!!!!!!!!!@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",var_dict)
         param, param_set, ok = action.get_all_params(var_dict)
+        # print("#######################################param =  param_set  , ok ",param , param_set,ok)
+        # ['?k', '?k1'] {(1,), (1, 1)} True
         if ok:
-            if param_set is not None and len(param_set) > 0:
-                for k in param_set:
-                    param_dict = {param: k}
+            if param != None and len(param_set[0]) > 0:
+                if len(param) == 1 and param_set[0] is not None:
+                    for k in param_set[0]:
+                        param_dict = {param[0]: k}
+                        eff_dict = action.get_eff(var_dict, param_dict)
+                        # print("eff_dict = ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",eff_dict)
+                        if eff_dict is not None:
+                            res = self.get_state_tuple(eff_dict)
+                            if not self.check_np(res):
+                                # print("k , action.name , res )))))))))))))))))))))))",k , action.name,res)
+                                yield k, action.name, res
+                elif param_set[0] is not None:
+
+                    # print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%多于俩参数！！还没写",param,param_set)
+                    param_dict = {}
+                    for i in range(len(param)):
+                        for k in param_set[i]:
+                            param_dict[param[i]] = k
+                            # print("k = ***************************",k)
+                    # print("var_Dcit , param_dict = &&&&&&&&&&&&&&&&&&&&&&&&&&&&",var_dict , param_dict)
                     eff_dict = action.get_eff(var_dict, param_dict)
+                    # print("eff_dict = &&&&&&&&&&&&&&&&&&&&&&&&",eff_dict)
                     if eff_dict is not None:
+                        # print("afdasfa")
                         res = self.get_state_tuple(eff_dict)
                         if not self.check_np(res):
+                            # print("#########################k ,action.name , res",k , action.name , res)
                             yield k, action.name, res
             else:
-                param_dict = {param: 0}
+                param_dict = {}
+                for i in range(len(param)):
+                    param_dict[param[i]] = 0
                 eff_dict = action.get_eff(var_dict, param_dict)
                 if eff_dict is not None:
                     res = self.get_state_tuple(eff_dict)

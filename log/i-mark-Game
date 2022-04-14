@@ -146,3 +146,75 @@ N-formula:	 Not(v0%2 == 1)
 time cost:	 0.20600032806396484
 strategies:	 [(v0%2 == 0, 'take1', 1)]
 time cost:	 0.4679992198944092
+
+misere rule
+N-formula:	 Not(v0%3 == 1)
+time cost:	 0.8231611251831055
+strategies:	 [(v0%3 == 0, 'take1', 2), (v0%3 == 2, 'take1', 1)]
+time cost:	 1.4231634140014648
+
+misere rule
+N-formula:	 Not(v0%3 == 1)
+time cost:	 0.5884487628936768
+strategies:	 [(v0%3 == 0, 'take1', 2), (v0%3 == 2, 'take1', 1)]
+time cost:	 1.0424516201019287
+
+misere rule
+N-formula:	 Not(v0%2 == 1)
+time cost:	 0.21073460578918457
+strategies:	 [(v0%2 == 0, 'take1', 1)]
+time cost:	 0.4933934211730957
+
+misere rule
+N-formula:	 Not(v0%2 == 1)
+time cost:	 0.19199752807617188
+strategies:	 [(v0%2 == 0, 'take1', 1)]
+time cost:	 0.42299914360046387
+
+normal rule
+N-formula:	 Or(And(v0 >= 3, v0%2 == 0), And(v0 <= 3, Not(v0%2 == 0)))
+time cost:	 1.1583809852600098
+strategies:	 [(And(Not(3 <= v0), v0%2 == 1), 'take1', v0), (v0 == 3, 'take1', 1)]
+time cost:	 1.669776439666748
+
+normal rule
+N-formula:	 Or(And(v0 >= 3, v0%2 == 0), And(v0 <= 3, Not(v0%2 == 0)))
+time cost:	 0.7061729431152344
+strategies:	 [(And(Not(3 <= v0), v0%2 == 1), 'take1', v0), (v0 == 3, 'take1', 1)]
+time cost:	 1.133286952972412
+
+normal rule
+N-formula:	 Or(And(v0 <= 7, v0%2 == 1), And(v0 >= 7, Not(v0%2 == 1)))
+time cost:	 9.600846529006958
+strategies:	 [(And(Not(7 <= v0), v0%2 == 1), 'take1', 1), (v0 == 7, 'take1', 1)]
+time cost:	 10.123296737670898
+
+misere rule
+N-formula:	 Not(v0%2 == 1)
+time cost:	 0.22050166130065918
+strategies:	 [(v0%2 == 0, 'take1', 1)]
+time cost:	 0.451740026473999
+
+misere rule
+N-formula:	 Not(v0%2 == 1)
+time cost:	 0.19066572189331055
+strategies:	 [(v0%2 == 0, 'take1', 1)]
+time cost:	 0.42740678787231445
+
+misere rule
+N-formula:	 Not(v0%2 == 1)
+time cost:	 0.2211768627166748
+strategies:	 [(v0%2 == 0, 'take1', 1)]
+time cost:	 0.43174028396606445
+
+misere rule
+N-formula:	 Not(v0%2 == 1)
+time cost:	 0.26700258255004883
+strategies:	 [(v0%2 == 0, 'take1', 1)]
+time cost:	 0.4441843032836914
+
+normal rule
+N-formula:	 Or(And(v0 >= 7, v0%2 == 0), And(v0 <= 7, Not(v0%2 == 0)))
+time cost:	 4.3762335777282715
+strategies:	 [(And(Not(7 <= v0), v0%2 == 1), 'take1', 1), (v0 == 7, 'take1', 1)]
+time cost:	 4.8556013107299805

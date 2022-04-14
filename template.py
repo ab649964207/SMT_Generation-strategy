@@ -1,9 +1,14 @@
+
 import random
+import re
 
 from z3 import *
+from 可修改代码smt.domain.parser import PDDLParser
+from 可修改代码smt.domain.utils.split import split
 
 
 def combine(iter):
+
     tmp_list = [i for i in iter]
     res = tmp_list[0]
     for i in tmp_list[1:]:
@@ -35,7 +40,7 @@ def gcd(*nums):
 
 
 class FormulaTemplate:
-    def __init__(self, vi ,w ,k, h, m ,timeout=3000000):  ####加了w
+    def __init__(self, vi, w, k, h, m, pwd ,timeout=3000000  ):  ####加了w
         self.k = k  # amount of clause 多少个子句
         self.h = h  # number of inequality  第一类不等式数量上限
         self.m = m  # number of mode number  第二类不等式数量上限
@@ -43,6 +48,7 @@ class FormulaTemplate:
         self.w = w
 
         self.vi = vi
+        print("vi   ",self.vi)
         n = len(vi)
         self.n = n
         self.aeij = [[Int('ae' + str(i) + str(j)) for j in range(n)] for i in range(h)]
@@ -56,6 +62,8 @@ class FormulaTemplate:
         self.tij = [[Bool('t' + str(j) + str(i)) for i in range(m)] for j in range(k)]
         self.ntij = [[Bool('nt' + str(j) + str(i)) for i in range(m)] for j in range(k)]
         self.s = Solver()
+
+        self.pwd = pwd
 
 
 
@@ -92,6 +100,39 @@ class FormulaTemplate:
 
         self.s.set("timeout", timeout)
 
+    def findE(self,pddl_pwd):
+        lines = []
+        for line in open(pddl_pwd):
+            lines.append(line.strip())
+        pddl_ln = ' '.join(lines)
+        pddl_tasks = split(pddl_ln)
+
+        # print("Preliminary analyse:")
+        # for task in pddl_tasks:
+            # print(task)
+        # print("/" * 50)
+
+        task_dict = {"action": []}
+        for task in pddl_tasks:
+            if task[0][0] == ':':
+                key = task[0][1:]
+                if key == 'action':
+                    task_dict[key].append(task[1:])
+                    # print("ttttttttttttttttttttttttttttask_dict = ",task_dict)
+                else:
+                    task_dict[key] = task[1:]
+                    # print("ttttttttttttttttttttttttttttask1111_dict = ",task_dict)
+            else:
+                if task[0] == 'domain':
+                    self.name = task[1]
+        print(self.name)
+
+        #####找到名字中的参数
+        number = re.findall(r"[-+]?\d*\.\d+|\d+", self.name)
+        print("找到的常数为@@@@", number)
+        return number
+        #####
+
     def add(self, example, label):
         self.s.add(self.encoding(example, label))
 
@@ -110,8 +151,10 @@ class FormulaTemplate:
         Equ = [combine(example[j] * self.aeij[i][j] for j in range(self.n)) != self.bi[i] for i in range(self.h)]
         Ge = [combine(example[j] * self.aeij[i][j] for j in range(self.n)) >= self.bi[i] for i in range(self.h)]
         Le = [combine(example[j] * self.aeij[i][j] for j in range(self.n)) <= self.bi[i] for i in range(self.h)]
+        # print(self.amij , self.ei , " fasdfa " ,self.m , self.n,example)
         Me = [combine(example[j] * self.amij[i][j] for j in range(self.n)) % self.ei[i] == self.ci[i] for i in
               range(self.m)]
+
         Tk = []
         for k in range(self.k):
             clause = []
@@ -135,10 +178,122 @@ class FormulaTemplate:
         # self.E = [model[self.ei[i]].as_long() if model[self.ei[i]] is not None else 1 for i in range(self.m)]
         # print("E= \n",self.E)
         ####改动
-        for i in range(self.m):
-            self.ei[i] = FormulaTemplate.W_size(self.w)
-        self.E = [self.ei[i] for i in range(self.m)]
-        print("E = \n",self.E)
+        # for i in range(self.m):
+            # self.ei[i] = FormulaTemplate.W_size(self.w)
+            # print("ei[i]=$$$$$$$$$$$$$$$$$$$$$$$$$$4",self.findE(self.pwd))
+        len1 = len(self.findE(self.pwd))
+        print("len1+",len1)
+        if(len1 == 1):
+            if( self.w < len1   ):
+                for i in range(self.m):
+                    self.ei[i] = int(self.findE(self.pwd)[self.w-1])+self.w
+                self.E = [self.ei[i] for i in range(self.m)]
+                print("self.w",self.w,"    ei[i]",self.ei[i])
+            else:
+                if(self.w <= (len1+1) and len1 >= 1 ):
+                    for i in range(self.m):
+                        self.ei[i] = int(self.findE(self.pwd)[len1-1])+self.w
+                    self.E = [self.ei[i] for i in range(self.m)]
+                    print("self.w" , self.w , "    ei[i]" , self.ei[i])
+                else:
+                    for i in range(self.m):
+                        self.ei[i] = FormulaTemplate.W_size(self.w)
+                    self.E = [self.ei[i] for i in range(self.m)]
+                    print("self.w" + self.w + "    ei[i]" + self.ei[i])
+        elif(len1 == 2):
+            if (self.w < len1):
+                for i in range(self.m):
+
+                    self.ei[i] = int(self.findE(self.pwd)[self.w - 1])
+                self.E = [self.ei[i] for i in range(self.m)]
+            elif (self.w <= 3):
+                self.w = self.w - 2
+                for i in range(self.m):
+
+                    self.ei[i] = int(self.findE(self.pwd)[1]) + self.w
+                self.E = [self.ei[i] for i in range(self.m)]
+            elif (self.w <= 5):
+                self.w = self.w - 4
+                for i in range(self.m):
+                    self.ei[i] = int(self.findE(self.pwd)[0]) + self.w
+                self.E = [self.ei[i] for i in range(self.m)]
+            else:
+                self.w = self.w - 4
+                for i in range(self.m):
+                    self.ei[i] = FormulaTemplate.W_size(self.w)
+                self.E = [self.ei[i] for i in range(self.m)]
+        elif(len1 == 3):
+            if(self.w < len1):
+                for i in range(self.m):
+                    self.ei[i] = int(self.findE(self.pwd)[self.w-1])
+                self.E = [self.ei[i] for i in range(self.m)]
+
+            elif(self.w <= 5):
+                self.w = self.w - 3
+                for i in range(self.m):
+                    self.ei[i] = int(self.findE(self.pwd)[2]) + self.w
+                self.E = [self.ei[i] for i in range(self.m)]
+
+                # print("E = @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2", self.E)
+            elif(self.w <= 7):
+                self.w = self.w - 5
+                for i in range(self.m):
+                    self.ei[i] = int(self.findE(self.pwd)[1]) + self.w
+                self.E = [self.ei[i] for i in range(self.m)]
+
+                # print("E = @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@3", self.E)
+            elif(self.w <= 9) :
+                self.w = self.w - 7
+                for i in range(self.m):
+                    self.ei[i] = int(self.findE(self.pwd)[0]) + self.w
+                self.E = [self.ei[i] for i in range(self.m)]
+
+                # print("E = @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@4", self.E)
+            else:
+                self.w = self.w - 8
+                for i in range(self.m):
+                    self.ei[i] = FormulaTemplate.W_size(self.w)
+                self.E = [self.ei[i] for i in range(self.m)]
+
+                # print("E = @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@5", self.E)
+        elif (len1 == 4):
+            if (self.w < len1):
+                for i in range(self.m):
+                    self.ei[i] = int(self.findE(self.pwd)[self.w-1])
+                self.E = [self.ei[i] for i in range(self.m)]
+            elif (self.w <= 5):
+                self.w = self.w - 3
+                for i in range(self.m):
+                    self.ei[i] = int(self.findE(self.pwd)[3]) + self.w
+                self.E = [self.ei[i] for i in range(self.m)]
+            elif (self.w <= 7):
+                self.w = self.w - 5
+                for i in range(self.m):
+                    self.ei[i] = int(self.findE(self.pwd)[2]) + self.w
+                self.E = [self.ei[i] for i in range(self.m)]
+            elif (self.w <= 9):
+                self.w = self.w - 7
+                for i in range(self.m):
+                    self.ei[i] = int(self.findE(self.pwd)[1]) + self.w
+                self.E = [self.ei[i] for i in range(self.m)]
+            elif (self.w <= 11):
+                self. w = self.w  - 9
+                for i in range(self.m):
+                    self.ei[i] = int(self.findE(self.pwd)[0]) + self.w
+                self.E = [self.ei[i] for i in range(self.m)]
+            else:
+                self.w = self.w - 10
+                for i in range(self.m):
+                    self.ei[i] = FormulaTemplate.W_size(self.w)
+                self.E = [self.ei[i] for i in range(self.m)]
+
+
+
+
+        # self.E = [self.ei[i] for i in range(self.m)]
+        print("E=     ",self.E)
+
+        # print("EEEEEEEEEEEEEEEEEEEEEEEE",self.E)
         ####
         self.C = [model[self.ci[i]].as_long() if model[self.ci[i]] is not None else 0 for i in range(self.m)]
         self.A = [[model[self.aeij[i][j]].as_long() if model[self.aeij[i][j]] is not None else 0
@@ -191,6 +346,7 @@ class FormulaTemplate:
                     #     self.E[i] /= div
                     #     for j in range(self.n):
                     #         self.M[i][j] /= div
+                    self.E[i] = int(self.E[i])
                     if not co_prime(pix, self.E[i]):
                         self.E[i] /= gcd(pix, self.E[i])
                     for j in range(self.n):

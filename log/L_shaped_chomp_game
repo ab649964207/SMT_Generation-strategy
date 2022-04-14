@@ -99,3 +99,33 @@ N-formula:	 Not(-1*v0 + v1 == 0)
 time cost:	 0.7986457347869873
 strategies:	 [(Not(0 <= -1*v0 + v1), 'eat1', 1 + v1), (Not(-1*v0 + v1 <= 0), 'eat2', 1 + v0)]
 time cost:	 1.3714783191680908
+
+normal rule
+N-formula:	 Not(v0 + -1*v1 == 0)
+time cost:	 0.9185702800750732
+strategies:	 []
+time cost:	 1.236539602279663
+
+normal rule
+N-formula:	 Not(-1*v0 + v1 == 0)
+time cost:	 0.279893159866333
+strategies:	 []
+time cost:	 0.6109297275543213
+
+normal rule
+N-formula:	 Not(-1*v0 + v1 == 0)
+time cost:	 0.2960083484649658
+strategies:	 []
+time cost:	 0.6139659881591797
+
+normal rule
+N-formula:	 Not(-1*v0 + v1 == 0)
+time cost:	 0.27500486373901367
+strategies:	 []
+time cost:	 0.5840046405792236
+
+normal rule
+N-formula:	 Not(-1*v0 + v1 == 0)
+time cost:	 0.44968581199645996
+strategies:	 []
+time cost:	 1.0801587104797363

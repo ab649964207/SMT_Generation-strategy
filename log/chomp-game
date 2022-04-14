@@ -129,3 +129,57 @@ N-formula:	 Not(v0 + v1 == 2)
 time cost:	 0.2113664150238037
 strategies:	 [(Not(2 <= v0 + v1), 'eat1', 0)]
 time cost:	 0.5474045276641846
+
+normal rule
+N-formula:	 Not(v0 + -1*v1 == 1)
+time cost:	 0.3672046661376953
+strategies:	 []
+time cost:	 0.6752099990844727
+
+normal rule
+N-formula:	 Not(v0 + -1*v1 == 1)
+time cost:	 0.42296624183654785
+strategies:	 []
+time cost:	 0.7939670085906982
+
+misere rule
+N-formula:	 Not(v0 + v1 == 2)
+time cost:	 0.18534064292907715
+strategies:	 [(Not(2 <= v0 + v1), 'eat1', 0)]
+time cost:	 0.5743005275726318
+
+normal rule
+N-formula:	 Not(v0 + -1*v1 == 1)
+time cost:	 0.5751469135284424
+strategies:	 []
+time cost:	 0.9728503227233887
+
+normal rule
+N-formula:	 Not(v0 + -1*v1 == 1)
+time cost:	 0.38432884216308594
+strategies:	 []
+time cost:	 0.7103710174560547
+
+normal rule
+N-formula:	 Not(-1*v0 + v1 == -1)
+time cost:	 0.35268425941467285
+strategies:	 [(Not(-1 <= -1*v0 + v1), 'eat1', 2 + v1), (Not(-1*v0 + v1 <= -1), 'eat2', v0)]
+time cost:	 1.119534969329834
+
+normal rule
+N-formula:	 Not(-1*v0 + v1 == -1)
+time cost:	 0.3245508670806885
+strategies:	 [(Not(-1 <= -1*v0 + v1), 'eat1', 2 + v1), (Not(-1*v0 + v1 <= -1), 'eat2', v0)]
+time cost:	 1.0771098136901855
+
+normal rule
+N-formula:	 Not(-1*v0 + v1 == -1)
+time cost:	 0.4971768856048584
+strategies:	 [(Not(-1 <= -1*v0 + v1), 'eat1', 2 + v1), (Not(-1*v0 + v1 <= -1), 'eat2', v0)]
+time cost:	 1.1763298511505127
+
+normal rule
+N-formula:	 Not(-1*v0 + v1 == -1)
+time cost:	 0.33045458793640137
+strategies:	 [(Not(-1 <= -1*v0 + v1), 'eat1', 2 + v1), (Not(-1*v0 + v1 <= -1), 'eat2', v0)]
+time cost:	 1.0374183654785156

@@ -520,3 +520,99 @@ N-formula:	 v0%2 == 1
 time cost:	 0.18600249290466309
 strategies:	 [(v0%2 == 1, 'take', 1)]
 time cost:	 0.45201921463012695
+
+normal rule
+N-formula:	 Not(v0%2 == 0)
+time cost:	 0.8948776721954346
+strategies:	 [(v0%2 == 1, 'take', 1)]
+time cost:	 1.3611395359039307
+
+normal rule
+N-formula:	 Not(v0%2 == 0)
+time cost:	 0.40302610397338867
+strategies:	 [(v0%2 == 1, 'take', 1)]
+time cost:	 0.6831691265106201
+
+normal rule
+N-formula:	 False
+time cost:	 0.05801200866699219
+strategies:	 []
+time cost:	 0.06999874114990234
+
+normal rule
+N-formula:	 False
+time cost:	 0.053999900817871094
+strategies:	 []
+time cost:	 0.06504273414611816
+
+normal rule
+N-formula:	 False
+time cost:	 0.05902218818664551
+strategies:	 []
+time cost:	 0.07000184059143066
+
+normal rule
+N-formula:	 False
+time cost:	 0.052030086517333984
+strategies:	 []
+time cost:	 0.06203436851501465
+
+normal rule
+N-formula:	 False
+time cost:	 0.05100369453430176
+strategies:	 []
+time cost:	 0.06200075149536133
+
+normal rule
+N-formula:	 False
+time cost:	 0.057039499282836914
+strategies:	 []
+time cost:	 0.06904101371765137
+
+normal rule
+N-formula:	 And(v0 >= 2, Not(v0%2 == 1))
+time cost:	 17.795393705368042
+strategies:	 [(And(Not(v0 <= 1), v0%2 == 0), 'take', 1)]
+time cost:	 18.115881204605103
+
+normal rule
+N-formula:	 False
+time cost:	 0.09205794334411621
+strategies:	 []
+time cost:	 0.0940999984741211
+
+normal rule
+N-formula:	 False
+time cost:	 0.09469795227050781
+strategies:	 []
+time cost:	 0.1130673885345459
+
+normal rule
+N-formula:	 Not(v0%2 == 0)
+time cost:	 0.6024961471557617
+strategies:	 [(v0%2 == 1, 'take', 1)]
+time cost:	 0.9216423034667969
+
+normal rule
+N-formula:	 Not(v0%2 == 0)
+time cost:	 0.36812591552734375
+strategies:	 [(v0%2 == 1, 'take', 1)]
+time cost:	 0.6216833591461182
+
+normal rule
+N-formula:	 Not(v0%2 == 0)
+time cost:	 0.31157851219177246
+strategies:	 [(v0%2 == 1, 'take', 1)]
+time cost:	 0.5405333042144775
+
+normal rule
+N-formula:	 And(v0 >= 2, v0%2 == 0)
+time cost:	 1.115675926208496
+strategies:	 [(And(Not(v0 <= 1), v0%2 == 0), 'take', 1)]
+time cost:	 1.3756556510925293
+
+normal rule
+N-formula:	 And(Not((3*v0)%4 == 3), Not(v0%4 == 0))
+time cost:	 0.7091219425201416
+strategies:	 [((3*v0)%4 == 1, 'take', 2)]
+time cost:	 1.1790947914123535

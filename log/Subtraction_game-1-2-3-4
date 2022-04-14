@@ -1,0 +1,12 @@
+
+normal rule
+N-formula:	 And(Not(v0 == 0), Not(v0%5 == 1))
+time cost:	 26.243754863739014
+strategies:	 [(And(Not(v0 <= 0), v0%5 == 0), 'take', 4), (And(Not(v0 <= 0), v0%5 == 2), 'take', 1), (And(Not(v0 <= 0), v0%5 == 3), 'take', 2), (And(Not(v0 <= 0), v0%5 == 4), 'take', 3)]
+time cost:	 27.52135181427002
+
+normal rule
+N-formula:	 v0%2 == 1
+time cost:	 0.11800622940063477
+strategies:	 []
+time cost:	 0.33248281478881836
