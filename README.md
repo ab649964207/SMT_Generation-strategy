@@ -5,3 +5,4 @@ git clone git@github.com:kaidChen/smt-icg.git
 
 pip install z3-solver
 
+# SMT_Generation-strategy
